@@ -6,7 +6,7 @@ import requests
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit
 
-SCREEN_SIZE = [600, 550]
+SCREEN_SIZE = [600, 700]
 
 
 class Example(QWidget):
@@ -21,21 +21,31 @@ class Example(QWidget):
         self.y = 55
         self.f = True
 
-    def getImage(self):
-        if self.x_coord.text() != '':
-            if self.x_mem != int(self.x_coord.text()) and self.x_mem != 228 and \
-                    self.y_mem != int(self.y_coord.text()) and self.y_mem != 228:
+    def getImage(self, toponym_coordinates=None):
+        if self.x_coord.text() != '' or toponym_coordinates is not None:
+            if toponym_coordinates:
+                self.x = eval(toponym_coordinates.split()[0])
+                self.y = eval(toponym_coordinates.split()[1])
+                self.x_coord.setText(str(self.x))
+                self.y_coord.setText(str(self.y))
+            if self.x_mem != eval(self.x_coord.text()) and self.x_mem != 228 and \
+                    self.y_mem != eval(self.y_coord.text()) and self.y_mem != 228:
                 self.f = True
 
             if self.f:
-                self.x_mem = int(self.x_coord.text())
-                self.y_mem = int(self.y_coord.text())
-                self.x = int(self.x_coord.text())
-                self.y = int(self.y_coord.text())
+                self.x_mem = eval(self.x_coord.text())
+                self.y_mem = eval(self.y_coord.text())
+                self.x = eval(self.x_coord.text())
+                self.y = eval(self.y_coord.text())
             self.f = False
             self.is_file = True
-            map_request = (f"http://static-maps.yandex.ru/1.x/?ll={self.x},{self.y}"
-                           f"&spn={str(self.map_scale)},0.01&l={self.layer}")
+            if toponym_coordinates:
+                map_request = (f"http://static-maps.yandex.ru/1.x/?ll={self.x},{self.y}"
+                               f"&spn={str(self.map_scale)},0.01&l={self.layer}&pt="
+                               f"{self.x},{self.y},pmrdm&amp")
+            else:
+                map_request = (f"http://static-maps.yandex.ru/1.x/?ll={self.x},{self.y}"
+                               f"&spn={str(self.map_scale)},0.01&l={self.layer}")
             response = requests.get(map_request)
 
             if not response:
@@ -50,6 +60,20 @@ class Example(QWidget):
 
             self.pixmap = QPixmap(self.map_file)
             self.image.setPixmap(self.pixmap)
+
+    def find_toponym(self):
+        geocoder_request = (f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode="
+                            f"{self.toponym_edit.text()}&format=json")
+        response = requests.get(geocoder_request)
+        if response:
+            json_response = response.json()
+            toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+            toponym_coordinates = toponym["Point"]["pos"]
+            self.getImage(toponym_coordinates)
+        else:
+            print("Ошибка выполнения запроса:")
+            print(geocoder_request)
+            print("Http статус:", response.status_code, "(", response.reason, ")")
 
     def initUI(self):
         self.layer = 'map'
@@ -89,6 +113,15 @@ class Example(QWidget):
         self.image = QLabel(self)
         self.image.move(0, 0)
         self.image.resize(600, 450)
+
+        self.toponym_edit = QLineEdit(self)
+        self.toponym_edit.move(103, 570)
+        self.toponym_edit.resize(300, 23)
+        self.toponym_text = QLabel('поиск объекта', self)
+        self.toponym_text.move(20, 574)
+        self.search_button = QPushButton('Поиск', self)
+        self.search_button.move(425, 569)
+        self.search_button.clicked.connect(self.find_toponym)
 
     def change_layer(self):
         if self.sender().text() == 'схема':
