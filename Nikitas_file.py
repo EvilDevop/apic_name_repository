@@ -96,7 +96,7 @@ class Example(QWidget):
         elif self.sender().text() == 'спутник':
             self.layer = 'sat'
         else:
-            self.layer = 'skl'
+            self.layer = 'sat,skl'
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_PageUp:
