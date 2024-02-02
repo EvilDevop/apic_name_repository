@@ -14,7 +14,7 @@ class Example(QWidget):
         super().__init__()
         self.y_mem = 228
         self.x_mem = 228
-
+        self.dict_but = {1060: 65, 1062: 87, 1042: 68, 1067: 83}
         self.initUI()
         self.map_scale = 0.001
         self.x = 55
@@ -99,27 +99,32 @@ class Example(QWidget):
             self.layer = 'sat,skl'
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_PageUp:
+        a = event.key()
+        if a in self.dict_but.keys():
+            a = self.dict_but[a]
+        if a == QtCore.Qt.Key_PageUp:
             self.map_scale += 1
             self.getImage()
-        elif event.key() == QtCore.Qt.Key_PageDown:
+        elif a == 16777220:
+            self.getImage()
+        elif a == QtCore.Qt.Key_PageDown:
             if self.map_scale > 1:
                 self.map_scale -= 1
             self.getImage()
 
-        elif event.key() == QtCore.Qt.Key_D:
+        elif a == QtCore.Qt.Key_D:
             self.x += 1
             self.getImage()
 
-        elif event.key() == QtCore.Qt.Key_A:
+        elif a == QtCore.Qt.Key_A:
             self.x -= 1
             self.getImage()
 
-        elif event.key() == QtCore.Qt.Key_W:
+        elif a == QtCore.Qt.Key_W:
             self.y += 1
             self.getImage()
 
-        elif event.key() == QtCore.Qt.Key_S:
+        elif a == QtCore.Qt.Key_S:
             self.y -= 1
             self.getImage()
         event.accept()
