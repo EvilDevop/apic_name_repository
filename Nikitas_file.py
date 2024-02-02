@@ -12,12 +12,27 @@ SCREEN_SIZE = [600, 550]
 class Example(QWidget):
     def __init__(self):
         super().__init__()
+        self.y_mem = 228
+        self.x_mem = 228
+
         self.initUI()
         self.map_scale = 0.001
         self.x = 55
         self.y = 55
+        self.f = True
 
     def getImage(self):
+
+        if self.x_mem != int(self.x_coord.text()) and self.x_mem != 228 and \
+                self.y_mem != int(self.y_coord.text()) and self.y_mem != 228:
+            self.f = True
+
+        if self.f:
+            self.x_mem = int(self.x_coord.text())
+            self.y_mem = int(self.y_coord.text())
+            self.x = int(self.x_coord.text())
+            self.y = int(self.y_coord.text())
+        self.f = False
         self.is_file = True
         map_request = (f"http://static-maps.yandex.ru/1.x/?ll={self.x},{self.y}"
                        f"&spn={str(self.map_scale)},0.01&l=map")
@@ -38,19 +53,19 @@ class Example(QWidget):
 
     def initUI(self):
         self.is_file = False
-
         self.setGeometry(100, 100, *SCREEN_SIZE)
         self.setWindowTitle('Отображение карты')
         self.x_text = QLabel('x-координата', self)
         self.x_text.move(20, 464)
         self.x_coord = QLineEdit(self)
-        self.x = self.x_coord.text()
+
         self.x_coord.move(100, 460)
         self.x_coord.resize(250, 23)
+
         self.y_text = QLabel('y-координата', self)
         self.y_text.move(20, 494)
         self.y_coord = QLineEdit(self)
-        self.y = self.y_coord.text()
+
         self.y_coord.move(100, 490)
         self.y_coord.resize(250, 23)
         self.get_response_button = QPushButton('Показать', self)
