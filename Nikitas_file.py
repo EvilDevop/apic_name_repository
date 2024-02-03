@@ -40,9 +40,14 @@ class Example(QWidget):
             self.f = False
             self.is_file = True
             if toponym_coordinates:
+                self.pt_coords = toponym_coordinates.split()
                 map_request = (f"http://static-maps.yandex.ru/1.x/?ll={self.x},{self.y}"
                                f"&spn={str(self.map_scale)},0.01&l={self.layer}&pt="
                                f"{self.x},{self.y},pmrdm&amp")
+            elif not toponym_coordinates and self.pt_coords:
+                map_request = (f"http://static-maps.yandex.ru/1.x/?ll={self.x},{self.y}"
+                               f"&spn={str(self.map_scale)},0.01&l={self.layer}&pt="
+                               f"{self.pt_coords[0]},{self.pt_coords[1]},pmrdm&amp")
             else:
                 map_request = (f"http://static-maps.yandex.ru/1.x/?ll={self.x},{self.y}"
                                f"&spn={str(self.map_scale)},0.01&l={self.layer}")
@@ -76,6 +81,7 @@ class Example(QWidget):
             print("Http статус:", response.status_code, "(", response.reason, ")")
 
     def initUI(self):
+        self.pt_coords = False
         self.layer = 'map'
         self.is_file = False
         self.setGeometry(100, 100, *SCREEN_SIZE)
