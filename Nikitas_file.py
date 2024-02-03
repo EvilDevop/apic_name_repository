@@ -81,7 +81,7 @@ class Example(QWidget):
             print("Http статус:", response.status_code, "(", response.reason, ")")
 
     def initUI(self):
-        self.pt_coords = False
+        self.pt_coords = None
         self.layer = 'map'
         self.is_file = False
         self.setGeometry(100, 100, *SCREEN_SIZE)
@@ -128,6 +128,15 @@ class Example(QWidget):
         self.search_button = QPushButton('Поиск', self)
         self.search_button.move(425, 569)
         self.search_button.clicked.connect(self.find_toponym)
+
+        self.reset_button = QPushButton('Сброс поискового результата', self)
+        self.reset_button.move(425, 600)
+        self.reset_button.clicked.connect(self.reset_result)
+
+    def reset_result(self):
+        self.toponym_edit.setText('')
+        self.pt_coords = None
+        self.getImage()
 
     def change_layer(self):
         if self.sender().text() == 'схема':
