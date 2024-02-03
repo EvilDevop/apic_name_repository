@@ -73,8 +73,10 @@ class Example(QWidget):
         if response:
             json_response = response.json()
             toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+            toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
             toponym_coordinates = toponym["Point"]["pos"]
             self.getImage(toponym_coordinates)
+            self.address_edit.setText(toponym_address)
         else:
             print("Ошибка выполнения запроса:")
             print(geocoder_request)
@@ -128,6 +130,12 @@ class Example(QWidget):
         self.search_button = QPushButton('Поиск', self)
         self.search_button.move(425, 569)
         self.search_button.clicked.connect(self.find_toponym)
+        self.address_edit = QLineEdit(self)
+        self.address_edit.move(58, 600)
+        self.address_edit.resize(345, 23)
+        self.address_edit.setDisabled(True)
+        self.address_text = QLabel('адрес', self)
+        self.address_text.move(20, 604)
 
         self.reset_button = QPushButton('Сброс поискового результата', self)
         self.reset_button.move(425, 600)
@@ -135,6 +143,7 @@ class Example(QWidget):
 
     def reset_result(self):
         self.toponym_edit.setText('')
+        self.address_edit.setText('')
         self.pt_coords = None
         self.getImage()
 
