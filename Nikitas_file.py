@@ -4,7 +4,8 @@ import sys
 from PyQt5 import QtCore
 import requests
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QCheckBox
+from PyQt5.QtCore import Qt
 
 SCREEN_SIZE = [600, 700]
 
@@ -20,6 +21,7 @@ class Example(QWidget):
         self.x = 55
         self.y = 55
         self.f = True
+        self.f_post = False
 
     def getImage(self, toponym_coordinates=None):
         if self.x_coord.text() != '' or toponym_coordinates is not None:
@@ -70,10 +72,17 @@ class Example(QWidget):
         geocoder_request = (f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode="
                             f"{self.toponym_edit.text()}&format=json")
         response = requests.get(geocoder_request)
+
+
         if response:
             json_response = response.json()
+
             toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
-            toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
+            if self.f_post:
+                toponym_post = toponym["metaDataProperty"]["GeocoderMetaData"]["Address"]['postal_code']
+                toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"] + toponym_post
+            else:
+                toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
             toponym_coordinates = toponym["Point"]["pos"]
             self.getImage(toponym_coordinates)
             self.address_edit.setText(toponym_address)
@@ -118,6 +127,11 @@ class Example(QWidget):
         self.hybrid_button.clicked.connect(self.change_layer)
         self.hybrid_button.clicked.connect(self.getImage)
 
+        self.post_check = QCheckBox('Почтовый индекс', self)
+        self.post_check.move(25, 650)
+        self.post_check.toggle()
+        self.post_check.stateChanged.connect(self.post)
+
         self.image = QLabel(self)
         self.image.move(0, 0)
         self.image.resize(600, 450)
@@ -140,6 +154,12 @@ class Example(QWidget):
         self.reset_button = QPushButton('Сброс поискового результата', self)
         self.reset_button.move(425, 600)
         self.reset_button.clicked.connect(self.reset_result)
+
+    def post(self, state):
+        if state == Qt.Checked:
+            self.f_post = True
+        else:
+            self.f_post = False
 
     def reset_result(self):
         self.toponym_edit.setText('')
@@ -167,6 +187,11 @@ class Example(QWidget):
         elif a == QtCore.Qt.Key_PageDown:
             if self.map_scale > 1:
                 self.map_scale -= 1
+            else:
+                if self.map_scale > 0.1:
+                    self.map_scale -= 0.1
+
+
             self.getImage()
 
         elif a == QtCore.Qt.Key_D:
