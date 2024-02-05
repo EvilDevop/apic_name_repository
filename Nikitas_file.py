@@ -158,6 +158,7 @@ class Example(QWidget):
     def post(self, state):
         if state == Qt.Checked:
             self.f_post = True
+            print('test')
         else:
             self.f_post = False
 
