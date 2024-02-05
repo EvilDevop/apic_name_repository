@@ -21,7 +21,7 @@ class Example(QWidget):
         self.x = 55
         self.y = 55
         self.f = True
-        self.f_post = False
+        self.f_post = True
 
     def getImage(self, toponym_coordinates=None):
         if self.x_coord.text() != '' or toponym_coordinates is not None:
@@ -69,12 +69,15 @@ class Example(QWidget):
             self.image.setPixmap(self.pixmap)
 
     def find_toponym(self):
+        if self.toponym_edit.text() == '':
+            return None
         geocoder_request = (f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode="
                             f"{self.toponym_edit.text()}&format=json")
         response = requests.get(geocoder_request)
 
 
         if response:
+            print(228)
             json_response = response.json()
 
             toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
@@ -86,6 +89,7 @@ class Example(QWidget):
             toponym_coordinates = toponym["Point"]["pos"]
             self.getImage(toponym_coordinates)
             self.address_edit.setText(toponym_address)
+
         else:
             print("Ошибка выполнения запроса:")
             print(geocoder_request)
@@ -127,11 +131,6 @@ class Example(QWidget):
         self.hybrid_button.clicked.connect(self.change_layer)
         self.hybrid_button.clicked.connect(self.getImage)
 
-        self.post_check = QCheckBox('Почтовый индекс', self)
-        self.post_check.move(25, 650)
-        self.post_check.toggle()
-        self.post_check.stateChanged.connect(self.post)
-
         self.image = QLabel(self)
         self.image.move(0, 0)
         self.image.resize(600, 450)
@@ -155,12 +154,18 @@ class Example(QWidget):
         self.reset_button.move(425, 600)
         self.reset_button.clicked.connect(self.reset_result)
 
+        self.post_check = QCheckBox('Почтовый индекс', self)
+        self.post_check.move(25, 650)
+        self.post_check.toggle()
+        self.post_check.stateChanged.connect(self.post)
+
     def post(self, state):
         if state == Qt.Checked:
             self.f_post = True
-            print('test')
+            self.find_toponym()
         else:
             self.f_post = False
+            self.find_toponym()
 
     def reset_result(self):
         self.toponym_edit.setText('')
